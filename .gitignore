@@ -168,4 +168,7 @@ _deps
 .*.kate-swp
 .swp.*
 
+## results directory
+results
+
 # End of https://www.gitignore.io/api/c++,kate,cmake,clion
