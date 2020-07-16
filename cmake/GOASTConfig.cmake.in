@@ -1,0 +1,35 @@
+include(CMakeFindDependencyMacro)
+
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
+
+find_dependency(Eigen3)
+find_dependency(SuiteSparse)
+find_dependency(OpenMesh)
+
+if (@GOAST_WITH_OPENMP@)
+  find_dependency(OpenMP)
+endif ()
+
+if (@GOAST_WITH_IPOPT@)
+  find_dependency(Ipopt)
+endif ()
+
+if (@GOAST_WITH_MOSEK@)
+  find_dependency(MOSEK)
+endif ()
+
+if (@GOAST_WITH_ADOLC@)
+  find_dependency(ADOLC)
+endif ()
+
+if (@GOAST_WITH_VTK@)
+  find_dependency(VTK)
+endif ()
+
+if (@GOAST_WITH_TRLIB@)
+  find_dependency(Trlib)
+endif ()
+
+
+include("${CMAKE_CURRENT_LIST_DIR}/GOASTTargets.cmake")
+
