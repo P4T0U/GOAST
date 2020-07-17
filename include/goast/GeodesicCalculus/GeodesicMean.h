@@ -248,9 +248,9 @@ public:
         Dest.resize( _numOfFreeShapes * _numLocalDofs );
         Dest.setZero();
 
-//#ifdef _OPENMP
-//#pragma omp parallel for
-//#endif
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
         for (int n = 0; n < _numOfShapes; n++) {
             VectorType Gradient( _numOfFreeShapes * _numLocalDofs );
             Gradient.setZero();
@@ -264,11 +264,11 @@ public:
             }
 
             _W.applyAddUndefGradient(Arg[1 + n].segment( (_K-2)*_numLocalDofs, _numLocalDofs), _shapes.segment( n*_numLocalDofs, _numLocalDofs), Gradient.segment( (1 + n * (_K - 1) + (_K - 2) )* _numLocalDofs, _numLocalDofs));
-//#ifdef _OPENMP
-//#pragma omp critical
-//#endif
+#ifdef _OPENMP
+#pragma omp critical
+#endif
             Dest += _alpha[n] * factor * Gradient;
-            std::cerr << n << "th shape has partial derivative norm of " << Gradient.norm() << std::endl;
+            //std::cerr << n << "th shape has partial derivative norm of " << Gradient.norm() << std::endl;
         }
     }
 };
