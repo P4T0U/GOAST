@@ -38,7 +38,7 @@ class MultiResolutionOperator{
    std::vector<int> _fixedVertexIndices;
 
 public:  
-  MultiResolutionOperator( const MeshTopologySaver& Topology, bool quiet = false ) 
+  MultiResolutionOperator( const MeshTopologySaver& Topology, bool quiet = false )
   : _fineTopology( Topology ),
     _numOfVerticesInCoarseMesh( -1 ),
     _quiet( quiet ),
@@ -67,7 +67,7 @@ public:
     
     if( !_quiet ) std::cerr << "Decimation..." << std::endl;
     decInfo.resize( _fineTopology.getNumVertices() );
-    SimultaneousDecimater<ConfiguratorType, QuadricType> simDec( FineMeshes, _fixedVertexIndices );  
+    SimultaneousDecimater<ConfiguratorType, QuadricType> simDec( FineMeshes, _fixedVertexIndices, _quiet );
     auto t_start = std::chrono::high_resolution_clock::now();
     simDec.calcDecimation( theta, decInfo ); 
     auto t_end = std::chrono::high_resolution_clock::now();

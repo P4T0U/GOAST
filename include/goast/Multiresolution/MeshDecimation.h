@@ -697,15 +697,15 @@ class SimultaneousDecimater {
   
 public: 
   /// Constructor
-  SimultaneousDecimater( const std::vector<TriMesh>& meshes ) 
+  SimultaneousDecimater( const std::vector<TriMesh>& meshes, bool Quiet = false )
   :  _numOfMeshes( meshes.size() ), _numOfOriginalVertices( meshes[0].n_vertices() ), _opMeshes( meshes ), _quadric( _opMeshes ), //_heap(NULL),
-  _prio( _numOfOriginalVertices ), _pos( _numOfOriginalVertices ), _collapseTarget( _numOfOriginalVertices ), _fixedVertices(_numOfOriginalVertices), _quiet( false ), _updatePositions( false ) {   
+  _prio( _numOfOriginalVertices ), _pos( _numOfOriginalVertices ), _collapseTarget( _numOfOriginalVertices ), _fixedVertices(_numOfOriginalVertices), _quiet( Quiet ), _updatePositions( false ) {
     _quadric.initialize();
   }  
   
-  SimultaneousDecimater( const std::vector<TriMesh>& meshes, const std::vector<int>& FixedVertices ) 
+  SimultaneousDecimater( const std::vector<TriMesh>& meshes, const std::vector<int>& FixedVertices, bool Quiet = false  )
   :  _numOfMeshes( meshes.size() ), _numOfOriginalVertices( meshes[0].n_vertices() ), _opMeshes( meshes ), _quadric( _opMeshes ), //_heap(NULL),
-  _prio( _numOfOriginalVertices ), _pos( _numOfOriginalVertices ), _collapseTarget( _numOfOriginalVertices ), _fixedVertices(_numOfOriginalVertices), _quiet( false ), _updatePositions( false ) {   
+  _prio( _numOfOriginalVertices ), _pos( _numOfOriginalVertices ), _collapseTarget( _numOfOriginalVertices ), _fixedVertices(_numOfOriginalVertices), _quiet( Quiet ), _updatePositions( false ) {
     _quadric.initialize();
     for( uint i = 0; i < FixedVertices.size(); i++ )
         _fixedVertices[FixedVertices[i]] = true;

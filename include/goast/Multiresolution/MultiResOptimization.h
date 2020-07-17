@@ -132,7 +132,7 @@ protected:
       
       // decimation
       std::vector<TriMesh> coarseMeshes;
-      MultiResolutionOperator<ConfiguratorType> multiresOp( Topology );
+      MultiResolutionOperator<ConfiguratorType> multiresOp( Topology, _quiet );
       multiresOp.computeDecimation( inputMeshes, _optInterface.getTheta(), coarseMeshes );
       
       std::vector<VectorType> coarseSolutions;  
