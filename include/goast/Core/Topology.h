@@ -327,20 +327,36 @@ public:
 			indices.push_back(*it);
   }
   
-  // compute union of all vertex-1-rings of all vertices contained in the index list
-  void getVertexList1RingVertices( std::vector<int>& indices ) const {
+  // compute union of all vertex-n-rings of all vertices contained in the index list
+  void getVertexListNRingVertices( const int N, std::vector<int>& indices ) const {
 	std::set<int> setOfVertices;
 	for (int n = 0; n < indices.size(); n++){
-            std::vector<int> oneRingIndices;
-            getVertex1RingVertices( indices[n], oneRingIndices);
-            for (uint j = 0; j < oneRingIndices.size(); j++)
-                setOfVertices.insert(oneRingIndices[j]);
+            std::vector<int> nRingIndices;
+            getVertexNRingVertices( N, indices[n], nRingIndices);
+            for (uint j = 0; j < nRingIndices.size(); j++)
+                setOfVertices.insert(nRingIndices[j]);
 	}
 
 	// merge all hierachical sets
 	indices.resize(0);
 	for (std::set<int>::iterator it = setOfVertices.begin(); it != setOfVertices.end(); ++it)
 	  indices.push_back(*it);
+  }
+
+  // compute union of all vertex-1-rings of all vertices contained in the index list
+  void getVertexList1RingVertices( std::vector<int>& indices ) const {
+        std::set<int> setOfVertices;
+        for (int n = 0; n < indices.size(); n++){
+            std::vector<int> oneRingIndices;
+            getVertex1RingVertices( indices[n], oneRingIndices);
+            for (uint j = 0; j < oneRingIndices.size(); j++)
+                setOfVertices.insert(oneRingIndices[j]);
+        }
+
+        // merge all hierachical sets
+        indices.resize(0);
+        for (std::set<int>::iterator it = setOfVertices.begin(); it != setOfVertices.end(); ++it)
+            indices.push_back(*it);
   }
 
   Eigen::MatrixXi getConnectivityMatrix() const {
