@@ -162,8 +162,10 @@ public:
       tau = zoomQuadratic( f, fNew, Df, tau );
       if ( tau < _tauMin )
         tau = std::min( std::max( OldTau, _tauMin ), _tauMax );
-      else
+      else {
+        tau = std::min( tau, _tauMax );
         fNew = evaluateLinesearchFnc( CurrentPosition, DescentDir, tau );
+      }
       if (std::isnan(fNew))
         fNew = std::numeric_limits<RealType>::infinity();
     }
