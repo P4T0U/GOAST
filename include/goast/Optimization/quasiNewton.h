@@ -150,20 +150,21 @@ public:
     VectorType tmp( Dest.size());
     VectorType descentDir( Dest.size());
 
+    // compute f
+    _DE.apply( Dest, f );
+    // Dirichlet boundary conditions?
+    if ( _bdryMask )
+      applyMaskToVector( *_bdryMask, f );
+
     RealType FNorm = 1e+15;
     RealType tau = 1.0;
     int iterations = 0;
     bool forcedReset = false;
 
     while ( FNorm > _stopEpsilon && (iterations < _maxIterations) && tau > 0. ) {
+      auto t_start = std::chrono::high_resolution_clock::now();
       // Quasi-Newton-iteration given by x_{k+1} = x_k - tau_k B_k^{-1} f(x_k)
       // iteration number k (i.e. find x_{k+1} from current approximation x_k)
-
-      // compute f and its norm
-      _DE.apply( Dest, f );
-      // Dirichlet boundary conditions?
-      if ( _bdryMask )
-        applyMaskToVector( *_bdryMask, f );
 
       // save x_k and f(x_k) for the computation of Dx = x_{k+1}-x_k and Df = f(x_{k+1})-f(x_k)
       Dx = Dest;
@@ -201,9 +202,13 @@ public:
       iterations++;
 
       _E.apply( Dest, energy );
+      f = tmp;
+      auto t_end = std::chrono::high_resolution_clock::now();
       if ( _quietMode == SHOW_ALL )
         std::cout << std::scientific << "step = " << iterations << " , stepsize = " << tau
-                  << ", energy = " << energy << ", error = " << FNorm << std::endl;
+                  << ", energy = " << energy << ", error = " << FNorm
+                  << std::fixed << ", time = " << std::chrono::duration<double, std::milli >( t_end - t_start ).count()
+                  << "ms" << std::endl;
 
     } // end while
 
