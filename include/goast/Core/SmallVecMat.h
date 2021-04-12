@@ -727,6 +727,18 @@ public:
     return ( tmp );
   }
 
+
+  SmallMat33<FloatType> operator- ( const SmallMat33<FloatType>& other ) const {
+    SmallMat33<FloatType> Res(*this);
+    Res -= other;
+    return Res;
+  }
+  SmallMat33<FloatType> operator+ ( const SmallMat33<FloatType>& other ) const {
+    SmallMat33<FloatType> Res(*this);
+    Res += other;
+    return Res;
+  }
+
   //!
   SmallVec3<FloatType> operator* ( const SmallVec3<FloatType>& vec ) const {
     SmallVec3<FloatType> Res;
@@ -735,7 +747,28 @@ public:
         Res[i] += this->_row[i][j] * vec[j];
     return( Res );
   }
-  
+
+  SmallMat33<FloatType> operator* ( const SmallMat33<FloatType>& other ) const {
+    SmallMat33<FloatType> Res;
+    for ( int i = 0; i < 3; ++i )
+      for ( int j = 0; j < 3; ++j )
+        for ( int k = 0; k < 3; ++k )
+          Res[i][j] += (*this)[i][k] * other[k][j];
+    return Res;
+  }
+
+  SmallMat33<FloatType> operator* ( FloatType other ) const {
+    SmallMat33<FloatType> Res(*this);
+    Res *= other;
+    return Res;
+  }
+
+  SmallMat33<FloatType> operator/ ( FloatType other ) const {
+    SmallMat33<FloatType> Res(*this);
+    Res /= other;
+    return Res;
+  }
+
   //!
   void addToDiagonal( const FloatType Value ) {
     for (int i = 0; i < 3; ++i)
@@ -755,6 +788,13 @@ public:
   }
 
 };
+
+template<typename FloatType>
+SmallMat33<FloatType> operator*( FloatType x, const SmallMat33<FloatType> &y ) {
+  SmallMat33<FloatType> Res( y );
+  Res *= x;
+  return Res;
+}
 
 //=============================================================================
 // Input/Output operators
