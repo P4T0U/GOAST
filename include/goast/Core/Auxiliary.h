@@ -397,7 +397,7 @@ void applyMaskToSymmetricMatrix( const std::vector<int> &mask, MatrixType &mat )
 
 //
 template<typename MatrixType>
-void applyMaskToMajor( const std::vector<int> &mask, MatrixType &mat ) {
+void applyMaskToMajor( const std::vector<int> &mask, MatrixType &mat, bool setDiagonalOne = true ) {
   // run over mask entries
   for ( uint k = 0; k < mask.size(); ++k ) {
     int majorIdx = mask[k];
@@ -407,43 +407,44 @@ void applyMaskToMajor( const std::vector<int> &mask, MatrixType &mat ) {
         throw BasicException("applyMaskToRow(): major index out of bounds!");
     }
     //insert diagonal entry
-    mat.coeffRef( majorIdx, majorIdx ) = 1.;
+    if (setDiagonalOne)
+      mat.coeffRef( majorIdx, majorIdx ) = 1.;
     // set column (resp. row) to e_i, where i = majorIdx
     for ( typename MatrixType::InnerIterator it( mat, majorIdx ); it; ++it )
-      it.valueRef() = (it.row() == it.col()) ? 1. : 0.;
+      it.valueRef() = (it.row() == it.col() && setDiagonalOne) ? 1. : 0.;
   }
 }
 
 //
 template<typename MatrixType>
-void applyMaskToMinor( const std::vector<int> &mask, MatrixType &mat ) {
+void applyMaskToMinor( const std::vector<int> &mask, MatrixType &mat, bool setDiagonalOne = true ) {
   for ( int mIdx : mask )
     mat.coeffRef( mIdx, mIdx ) = 1.;
 
   for ( int k = 0; k < mat.outerSize(); ++k ) {
     for ( typename MatrixType::InnerIterator it( mat, k ); it; ++it ) {
       if ( std::find( mask.begin(), mask.end(), it.index()) != mask.end())
-        it.valueRef() = (it.row() == it.col()) ? 1. : 0.;
+        it.valueRef() = (it.row() == it.col()&& setDiagonalOne) ? 1. : 0.;
     }
   }
 }
 
 //
 template<typename MatrixType>
-void applyMaskToRow( const std::vector<int> &mask, MatrixType &mat ) {
+void applyMaskToRow( const std::vector<int> &mask, MatrixType &mat, bool setDiagonalOne = true ) {
   if ( MatrixType::IsRowMajor )
-    applyMaskToMajor<MatrixType>( mask, mat );
+    applyMaskToMajor<MatrixType>( mask, mat, setDiagonalOne );
   else
-    applyMaskToMinor<MatrixType>( mask, mat );
+    applyMaskToMinor<MatrixType>( mask, mat, setDiagonalOne );
 }
 
 //
 template<typename MatrixType>
-void applyMaskToColumn( const std::vector<int> &mask, MatrixType &mat ) {
+void applyMaskToColumn( const std::vector<int> &mask, MatrixType &mat, bool setDiagonalOne = true ) {
   if ( MatrixType::IsRowMajor )
-    applyMaskToMinor<MatrixType>( mask, mat );
+    applyMaskToMinor<MatrixType>( mask, mat, setDiagonalOne );
   else
-    applyMaskToMajor<MatrixType>( mask, mat );
+    applyMaskToMajor<MatrixType>( mask, mat, setDiagonalOne );
 }
 
 // For each integer i in the mask, the i-th row-column of mat is set to e_i
