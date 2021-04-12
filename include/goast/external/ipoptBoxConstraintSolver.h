@@ -10,7 +10,7 @@
 
 #include "ipoptIncludes.h"
 
-#include <goast/Optimization.h>
+#include <goast/Optimization/optInterface.h>
 
 #ifdef GOAST_WITH_IPOPT
 

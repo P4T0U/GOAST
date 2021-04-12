@@ -126,13 +126,16 @@ public:
     _F.apply( x_k, F_k );
     // compute gradient and check norm
     _DF.apply( x_k, grad_F_k );
+    if ( _bdryMask )
+      applyMaskToVector<VectorType>( *_bdryMask, grad_F_k );
+
     RealType gradNorm = grad_F_k.norm();
     if ( gradNorm < _stopEpsilon ) {
       auto t_end_eval = std::chrono::high_resolution_clock::now();
       this->status.additionalTimings["Evaluation"] += std::chrono::duration<RealType, std::milli>(
               t_end_eval - t_start_eval ).count();
 
-      if ( _quietMode != SUPERQUIET )
+      if ( _quietMode == SHOW_ALL || _quietMode == SHOW_TERMINATION_INFO  )
         std::cout << " -- LSN -- Initial gradient norm below epsilon." << std::endl;
 
       return;
@@ -140,7 +143,7 @@ public:
     // compute Hessian
     _D2F.apply( x_k, Hess_F_k );
     if ( _bdryMask )
-      applyMaskToSymmetricMatrixAndVector<MatrixType, VectorType>( *_bdryMask, Hess_F_k, grad_F_k );
+      applyMaskToSymmetricMatrix<MatrixType>( *_bdryMask, Hess_F_k );
 
     auto t_end_eval = std::chrono::high_resolution_clock::now();
     this->status.additionalTimings["Evaluation"] += std::chrono::duration<RealType, std::milli>(t_end_eval - t_start_eval ).count();
@@ -210,8 +213,10 @@ public:
     _cholmodSolver.cholmod().print = 0;
 
     // print header for console output
-    if ( _quietMode != SUPERQUIET )
+    if ( _quietMode == SHOW_ALL )
         printHeader();
+    if ( _quietMode == SHOW_ALL )
+      printConsoleOutput(0, F_k, grad_F_k.norm(), 0, 0, 0, 0, 0, 0, 0);
 
     // start Newton iteration
     for ( int k = 1; k <= _maxIterations; k++ ) {
@@ -348,6 +353,7 @@ public:
                 << " ||===|| " << std::fixed << std::setprecision( 2 ) << this->status.totalTime
                 << " || " << this->status.additionalTimings["Direction"]
                 << " || " << this->status.additionalTimings["LineSearch"]
+                << " || " << this->status.additionalTimings["Evaluation"]
                 << std::endl;
     }
   }
