@@ -56,6 +56,21 @@ void generatePNG( const VectorType &t, const VectorType &x, const VectorType &y,
 // I/O FUNCTIONS
 //==========================================================================================================
 
+/**
+ * \brief Support for printing coordinates triples to streams
+ */
+inline std::ostream &operator<< ( std::ostream &os, const std::tuple<int,int,int> &v ) {
+  os << "(" << std::get<0>(v) << ", " <<  std::get<1>(v) << ", "  << std::get<2>(v) << ")";
+  return os;
+}
+/**
+ * \brief Support for printing coordinates pairs to streams
+ */
+inline std::ostream &operator<< ( std::ostream &os, const std::tuple<int,int> &v ) {
+  os << "(" << std::get<0>(v) << ", " <<  std::get<1>(v) << ")";
+  return os;
+}
+
 template<typename VectorType>
 void printVector( const VectorType& Arg, int numEntriesPerLine ) {
     for( unsigned int i = 1; i <= Arg.size(); i++ ){
