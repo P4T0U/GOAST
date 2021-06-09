@@ -139,6 +139,7 @@ public:
 
     // iteration loop
     do {
+      auto t_start = std::chrono::high_resolution_clock::now();
       iterations++;
       // Save the energy at the current position.
       energy = energyNew;
@@ -185,9 +186,13 @@ public:
       // compute error
       error = _useGradientBasedStopping ? currGradient.norm() : energy - energyNew;
 
+      auto t_end = std::chrono::high_resolution_clock::now();
+
       if ( _quietMode == SHOW_ALL )
-        std::cout << "step = " << iterations << " , stepsize = " << std::scientific << tau << ", energy = " << energyNew << ", error = "
-                  << error << std::endl;
+        std::cout << "step = " << iterations
+                  << std::scientific << " , stepsize = " << tau << ", energy = " << energyNew << ", error = " << error
+                  << std::fixed << ", time = " << std::chrono::duration<double, std::milli>( t_end - t_start ).count()
+                  << "ms" << std::endl;
 
       // stoppingCriterion == true means the iteration will be continued
       stoppingCriterion = (error > _stopEpsilon) && (iterations < _maxIterations) && (tau > 0);
