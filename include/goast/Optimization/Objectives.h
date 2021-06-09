@@ -129,4 +129,58 @@ private:
 
 };
 
+
+template<typename ConfiguratorType>
+class AdditionHessian : public ObjectiveHessian<ConfiguratorType> {
+protected:
+  typedef typename ConfiguratorType::RealType RealType;
+
+  typedef typename ConfiguratorType::VectorType VectorType;
+  typedef typename ConfiguratorType::SparseMatrixType MatrixType;
+  typedef typename ConfiguratorType::VecType VecType;
+  typedef typename ConfiguratorType::MatType MatType;
+
+//  const ObjectiveOp<ConfiguratorType> &_constraintOp;
+  std::vector<const ObjectiveHessian<ConfiguratorType> *> m_Ops;
+  const VectorType &m_Weights;
+
+  const int _numOps;
+//  const int _numShapes;
+
+public:
+  template<class... Items>
+  AdditionHessian( const VectorType &Weights, Items const &... constraintOps ) : m_Weights( Weights ),
+                                                                                 _numOps( sizeof...( constraintOps )) {
+    append_to_vector( m_Ops, constraintOps... );
+
+  }
+
+  void apply( const VectorType &Arg, MatrixType &Dest ) const override {
+    if ( Dest.rows() != Arg.size() || Dest.cols() != Arg.size())
+      Dest.resize( Arg.size(), Arg.size());
+    Dest.setZero();
+
+    for ( int i = 0; i < _numOps; i++ )
+      Dest += m_Weights[i] * ( *m_Ops[i] )( Arg );
+  }
+
+  int getTargetDimension() const override {
+    return 1;
+  }
+
+private:
+  void append_to_vector( std::vector<const ObjectiveHessian<ConfiguratorType> *> &outputvector,
+                         const ObjectiveHessian<ConfiguratorType> &elem ) {
+    outputvector.push_back( &elem );
+  };
+
+  template<typename ...T1toN>
+  void append_to_vector( std::vector<const ObjectiveHessian<ConfiguratorType> *> &outputvector,
+                         const ObjectiveHessian<ConfiguratorType> &elem, T1toN const &... elems ) {
+    outputvector.push_back( &elem );
+    append_to_vector( outputvector, elems... );
+  };
+
+};
+
 #endif //OPTIMIZATION_OBJECTIVES_H
