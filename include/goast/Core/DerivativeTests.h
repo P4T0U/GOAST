@@ -13,6 +13,7 @@
 #include <ctime>
 #include <iomanip>
 #include <fstream>
+#include <random>
 
 #include "Auxiliary.h"
 #include "IO.h"
@@ -497,7 +498,7 @@ public:
 
     for ( int i = 0; i < dimRange; i++ ) {
       VectorType error( numDofs ), diffQuot( numDofs ), resDeriv( numDofs );
-      std::vector<int> directionIndices( numDofs );
+      std::vector<std::tuple<int, int>> directionIndices( numDofs );
       outerDir.setZero();
       outerDir[i] = 1.;
       VectorType gradientWRTOuterDirection( numDofs );
@@ -510,8 +511,10 @@ public:
         resDeriv[j] = gateaux;
         diffQuot[j] = computeDiffQuotient( testPoint, outerDir, innerDir, stepSize );
         error[j] = std::abs(( diffQuot[j] - resDeriv[j] ) / resDeriv[j] );
+        directionIndices[j] = std::make_tuple(i, j);
       }
       if ( detailedOutput ) {
+        printVector( directionIndices, 10 );
         printVector( diffQuot, 10 );
         printVector( resDeriv, 10 );
       }
@@ -665,6 +668,155 @@ public:
     }
 
   }
+
+  void plotAllDirections( const VectorType &testPoint, const std::string saveNameStem ) const {
+    int numDofs = testPoint.size();
+
+    TensorType Hessian( _dimOfRange, numDofs, numDofs );
+    _DF.apply( testPoint, Hessian );
+
+    VectorType timeSteps( _numSteps ), energies( _numSteps ), derivs( _numSteps );
+
+    for ( int dim1 = 0; dim1 < _dimOfRange; dim1++ ) { //point at which hessian is checked
+      for ( int dim2 = 0; dim2 < numDofs; dim2++ ) { //first derivative
+        for ( int dim3 = 0; dim3 < numDofs; dim3++ ) { //second derivative
+          std::ostringstream saveName;
+          saveName << saveNameStem << "_" << dim1 << "_" << dim2 << "_" << dim3 << ".png";
+
+          RealType gateauxDerivative = Hessian( dim1, dim2, dim3 );
+
+          MatrixType tempMat( _dimOfRange, numDofs );
+          _F.apply( testPoint, tempMat );
+          RealType initialEnergy = tempMat.coeffRef( dim1, dim2 );
+
+          for ( int j = 0; j < _numSteps; j++ ) {
+            timeSteps[j] = ( j - _numSteps / 2 ) * _stepSize;
+            VectorType shiftedPoint = testPoint;
+            shiftedPoint[dim3] += timeSteps[j];
+            _F.apply( shiftedPoint, tempMat );
+            energies[j] = tempMat.coeffRef( dim1, dim2 );
+            derivs[j] = initialEnergy + timeSteps[j] * gateauxDerivative;
+          }
+          generatePNG( timeSteps, energies, derivs, saveName.str());
+
+        }
+      }
+    }
+
+  }
+
+
+  void testAllDirections( const VectorType &testPoint, bool detailedOutput= false ) const {
+    int numDofs = testPoint.size();
+
+    TensorType Hessian( _dimOfRange, numDofs, numDofs );
+    _DF.apply( testPoint, Hessian );
+
+    VectorType outerDir( numDofs ), innerDir( numDofs );
+
+    std::vector<RealType> error, diffQuot, resDeriv;
+    std::vector<std::tuple<int,int,int>> directionIndices;
+
+    for ( int dim1 = 0; dim1 < _dimOfRange; dim1++ ) { //point at which hessian is checked
+      for ( int dim2 = 0; dim2 < numDofs; dim2++ ) { //first derivative
+        outerDir.setZero();
+        outerDir[dim2] = 1.;
+        for ( int dim3 = 0; dim3 < numDofs; dim3++ ) { //second derivative
+          innerDir.setZero();
+          innerDir[dim3] = 1.;
+          RealType gateauxDerivative = Hessian( dim1, dim2, dim3 );
+          RealType diffQuotient = computeDiffQuotient(testPoint, dim1, outerDir, innerDir, _stepSize );
+
+          diffQuot.push_back( diffQuotient );
+          resDeriv.push_back( gateauxDerivative );
+          error.push_back( std::abs(( diffQuotient - gateauxDerivative ) / gateauxDerivative ));
+          directionIndices.emplace_back(  dim1, dim2, dim3 );
+        }
+      }
+    }
+
+    if ( detailedOutput ) {
+      printVector( directionIndices, 10 );
+      printVector( diffQuot, 10 );
+      printVector( resDeriv, 10 );
+    }
+
+    printVector( error, 10 );
+
+  }
+
+  void testRandomDirections( const VectorType &testPoint, int numOfRandomDir, bool detailedOutput = false,
+                             bool testNonNegEntriesOfHessianOnly = true ) const {
+    int numDofs = testPoint.size();
+
+    TensorType Hessian( _dimOfRange, numDofs, numDofs );
+    _DF.apply( testPoint, Hessian );
+
+    VectorType outerDir( numDofs ), innerDir( numDofs );
+
+    std::vector<RealType> error, diffQuot, resDeriv;
+    std::vector<std::tuple<int, int, int>> directionIndices;
+
+    // Setup randomness
+    std::random_device rd;
+    std::mt19937 rng( rd());
+    std::uniform_int_distribution<int> dist_range( 0, _dimOfRange - 1 );
+    std::uniform_int_distribution<int> dist_domain( 0, numDofs - 1 );
+
+    for ( unsigned i = 0; i < numOfRandomDir; ++i ) {
+      int dim1 = dist_range( rng );
+      int dim2 = dist_domain( rng );
+      int dim3 = dist_domain( rng );
+
+      outerDir.setZero();
+      outerDir[dim2] = 1.;
+
+      innerDir.setZero();
+      innerDir[dim3] = 1.;
+
+      RealType gateauxDerivative = Hessian( dim1, dim2, dim3 );
+      RealType diffQuotient = computeDiffQuotient( testPoint, dim1, outerDir, innerDir, _stepSize );
+
+      if ( testNonNegEntriesOfHessianOnly && std::abs( gateauxDerivative ) < 1.e-10 &&
+           std::abs( diffQuotient ) < 1.e-10 ) {
+        i--;
+        continue;
+      }
+
+      diffQuot.push_back( diffQuotient );
+      resDeriv.push_back( gateauxDerivative );
+      error.push_back( std::abs(( diffQuotient - gateauxDerivative ) / gateauxDerivative ));
+      directionIndices.emplace_back( dim1, dim2, dim3 );
+    }
+
+
+    if ( detailedOutput ) {
+      printVector( directionIndices, 10 );
+      printVector( diffQuot, 10 );
+      printVector( resDeriv, 10 );
+    }
+
+    printVector( error, 10 );
+
+  }
+
+  RealType computeDiffQuotient( const VectorType &testPoint, int targetDim, const VectorType &outerDir, const VectorType &innerDir,
+                                RealType tau ) const {
+
+    // evalualte DF(m)
+    int numDofs = innerDir.size();
+    int dimRange = _dimOfRange < 0 ? testPoint.size() : _dimOfRange;
+
+    MatrixType derivative, derivativeShifted;
+    _F.apply( testPoint, derivative );
+
+    //evaluate DF(m + h testDirection )
+    VectorType shiftedPoint = testPoint + tau * innerDir;
+    _F.apply( shiftedPoint, derivativeShifted );
+    return (( derivativeShifted - derivative) * outerDir)[targetDim] / tau;
+  }
+
+
 
   //! TODO
   void testSingleDirection( const VectorType &testPoint, const VectorType &dir1, const VectorType &dir2,
