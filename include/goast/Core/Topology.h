@@ -294,6 +294,13 @@ public:
 		indices.push_back(static_cast<int>(vv_it->idx()));
   }
 
+
+
+    void appendVertex1RingVertices( const int idx, std::vector<int>& indices) const {
+        for (TriMesh::ConstVertexVertexIter vv_it = _mesh.cvv_iter(_mesh.vertex_handle(idx)); vv_it.is_valid(); ++vv_it)
+            indices.push_back(static_cast<int>(vv_it->idx()));
+    }
+
   void getVertex1RingFaces( const int idx, std::vector<int>& indices) const {
     indices.resize(0);
     for (TriMesh::ConstVertexFaceIter vf_it = _mesh.cvf_iter(_mesh.vertex_handle(idx)); vf_it.is_valid(); ++vf_it)
@@ -322,6 +329,32 @@ public:
 
 	// merge all hierachical sets
 	indices.resize(0);
+	for (int n = 0; n <= N; n++)
+		for (std::set<int>::iterator it = hierachicalSet[n].begin(); it != hierachicalSet[n].end(); ++it)
+			indices.push_back(*it);
+  }
+
+  void appendVertexNRingVertices( const int N, const int idx, std::vector<int>& indices) const {
+	std::vector< std::set<int> > hierachicalSet(N + 1);
+	hierachicalSet[0].insert(idx);
+
+	for (int n = 1; n <= N; n++){
+		for (std::set<int>::iterator it = hierachicalSet[n - 1].begin(); it != hierachicalSet[n - 1].end(); ++it){
+			std::vector<int> oneRingIndices;
+			getVertex1RingVertices( *it, oneRingIndices);
+			for (uint j = 0; j < oneRingIndices.size(); j++)
+				hierachicalSet[n].insert(oneRingIndices[j]);
+		}
+
+		// erase old vertices
+		for (std::set<int>::iterator it = hierachicalSet[n - 1].begin(); it != hierachicalSet[n - 1].end(); ++it)
+			hierachicalSet[n].erase(*it);
+		if (n > 1)
+			for (std::set<int>::iterator it = hierachicalSet[n - 2].begin(); it != hierachicalSet[n - 2].end(); ++it)
+				hierachicalSet[n].erase(*it);
+	}
+
+	// merge all hierachical sets
 	for (int n = 0; n <= N; n++)
 		for (std::set<int>::iterator it = hierachicalSet[n].begin(); it != hierachicalSet[n].end(); ++it)
 			indices.push_back(*it);

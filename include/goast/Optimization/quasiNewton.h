@@ -53,6 +53,8 @@ protected:
   const std::vector<int> *_bdryMask;
   const BaseOp<VectorType, VectorType>* _inverseHessianOperator;
 
+  std::vector<std::function<void( int, const VectorType &, const RealType &, const VectorType & )>> m_callbackFcts;
+
 public:
   QuasiNewtonBFGS( const BaseOp<VectorType, RealType> &E,
                    const BaseOp<VectorType, VectorType> &DE,
@@ -127,6 +129,10 @@ public:
     _inverseHessianOperator = &InvHessianOp;
   }
 
+  void addCallbackFunction (const std::function<void( int, const VectorType &, const RealType &, const VectorType & )> &F) {
+    m_callbackFcts.push_back(F);
+  }
+
   void solve( const VectorType &Arg, VectorType &Dest ) const {
 
     if ( _maxIterations == 0 )
@@ -160,6 +166,11 @@ public:
     RealType tau = 1.0;
     int iterations = 0;
     bool forcedReset = false;
+
+
+    for ( auto &F: m_callbackFcts ) {
+      F( iterations, Dest, energy, f );
+    }
 
     while ( FNorm > _stopEpsilon && (iterations < _maxIterations) && tau > 0. ) {
       auto t_start = std::chrono::high_resolution_clock::now();
@@ -209,7 +220,9 @@ public:
                   << ", energy = " << energy << ", error = " << FNorm
                   << std::fixed << ", time = " << std::chrono::duration<double, std::milli >( t_end - t_start ).count()
                   << "ms" << std::endl;
-
+      for ( auto &F: m_callbackFcts ) {
+        F( iterations, Dest, energy, f );
+      }
     } // end while
 
     if ( _quietMode != SUPERQUIET ) {

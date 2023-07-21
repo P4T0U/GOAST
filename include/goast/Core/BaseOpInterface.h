@@ -48,7 +48,7 @@ public:
   }
 
   virtual void apply( const DomainType &Arg, RangeType &Dest, int hessSize, int hessOffset ) const {
-    throw std::logic_error("BaseOp::applyTransposed(): Unimplemented function! Should be provided in derived class!");
+    throw std::logic_error("BaseOp::apply(): Unimplemented function! Should be provided in derived class!");
   }
 
   virtual void pushTriplets ( const DomainType &Arg, _TripletListType &Dest ) const {
