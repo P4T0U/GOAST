@@ -130,7 +130,7 @@ public:
   void apply( const VectorType &Arg, RealType &Dest ) const {
     VectorType linearPart;
     _F.apply( Arg, linearPart );
-    Dest[0] = _alpha * linearPart.squaredNorm(); // 0.5 *
+    Dest = _alpha * linearPart.squaredNorm(); // 0.5 *
   }
 
 };
