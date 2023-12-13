@@ -160,7 +160,7 @@ public:
 
     // permute vertex indices when using reduced directions (here the boundary indices are moved to the end)
     VectorType diagonal( x_0.size());
-    Eigen::PermutationMatrix<Eigen::Dynamic> bndPermutation(numDofs);
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, typename MatrixType::StorageIndex> bndPermutation(numDofs);
     bndPermutation.setIdentity();
     if (_reducedDirection &&  _bdryMask ) {
       numDofs_red -= _bdryMask->size();
@@ -216,7 +216,7 @@ public:
     if ( _quietMode == SHOW_ALL )
         printHeader();
     if ( _quietMode == SHOW_ALL )
-      printConsoleOutput(0, F_k, grad_F_k.norm(), 0, 0, 0, 0, 0, 0, 0);
+      printConsoleOutput<std::chrono::duration<RealType, std::milli>>(0, F_k, grad_F_k.norm(), 0, 0, 0, t_end_setup - t_start_setup, t_end - t_start, std::chrono::duration<RealType, std::milli>(0 ), t_end_eval - t_start_eval);
 
     // start Newton iteration
     for ( int k = 1; k <= _maxIterations; k++ ) {
