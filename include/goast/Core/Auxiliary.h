@@ -449,16 +449,17 @@ void applyMaskToColumn( const std::vector<int> &mask, MatrixType &mat, bool setD
 
 // For each integer i in the mask, the i-th row-column of mat is set to e_i
 template<typename MatrixType>
-void applyMaskToMatrix( const std::vector<int>& mask, MatrixType& mat ) {
+void applyMaskToMatrix( const std::vector<int>& mask, MatrixType& mat, bool setDiagonalOne = true  ) {
 
-  for ( int mIdx : mask )
-    mat.coeffRef( mIdx, mIdx ) = 1.;
+  if ( setDiagonalOne )
+    for ( int mIdx : mask )
+      mat.coeffRef( mIdx, mIdx ) = 1.;
 
   for ( int k = 0; k < mat.outerSize(); ++k ) {
     for ( typename MatrixType::InnerIterator it( mat, k ); it; ++it ) {
       if ( std::find_if( mask.begin(), mask.end(),
                          [it]( const int &s ) { return (s == it.row() || s == it.col()); } ) != mask.end())
-        it.valueRef() = (it.row() == it.col()) ? 1. : 0.;
+        it.valueRef() = (it.row() == it.col() && setDiagonalOne ) ? 1. : 0.;
     }
   }
 }
