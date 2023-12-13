@@ -227,6 +227,9 @@ public:
       _coords[i] = _coords[i] / ns;
   }
 
+  FloatType *data() {
+    return &_coords[0];
+  }
 
   std::ostream &print( std::ostream &os ) const {
     os << "( ";
@@ -817,6 +820,14 @@ template<typename FloatType>
 SmallMat33<FloatType> operator*( FloatType x, const SmallMat33<FloatType> &y ) {
   SmallMat33<FloatType> Res( y );
   Res *= x;
+  return Res;
+}
+template<typename FloatType>
+SmallVec3<FloatType> operator*( const SmallVec3<FloatType> &x, const SmallMat33<FloatType> &y ) {
+  SmallVec3<FloatType> Res;
+  for ( int i = 0; i < 3; ++i )
+    for ( int j = 0; j < 3; ++j )
+      Res[j] += y[i][j] * x[i];
   return Res;
 }
 
