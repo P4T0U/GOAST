@@ -14,6 +14,8 @@
 #include "Optimization/optUtils.h"
 #include "Optimization/Constraints.h"
 #include "Optimization/Objectives.h"
+#include "Optimization/LinearOperator.h"
+#include "Optimization/Functionals.h"
 
 #include "Core/LinearSolver.h"
 
