@@ -97,54 +97,54 @@ template<typename ConfiguratorType>
 class ElasticMeanFunctional
         : public BaseOp<typename ConfiguratorType::VectorType, typename ConfiguratorType::RealType> {
 protected:
-    typedef typename ConfiguratorType::RealType RealType;
+  typedef typename ConfiguratorType::RealType RealType;
 
-    typedef typename ConfiguratorType::VectorType VectorType;
-    typedef typename ConfiguratorType::SparseMatrixType MatrixType;
-    typedef typename ConfiguratorType::TripletType TripletType;
+  typedef typename ConfiguratorType::VectorType VectorType;
+  typedef typename ConfiguratorType::SparseMatrixType MatrixType;
+  typedef typename ConfiguratorType::TripletType TripletType;
 
-    const DeformationBase<ConfiguratorType> &_W;
-    const VectorType &_shapes, _alpha;
-    const unsigned int _numOfShapes;
-    std::vector<Eigen::Ref<const VectorType> > _argRefs;
+  const DeformationBase<ConfiguratorType> &_W;
+  const VectorType &_shapes, _alpha;
+  const unsigned int _numOfShapes;
+  std::vector<Eigen::Ref<const VectorType> > _argRefs;
 
 public:
-    ElasticMeanFunctional(const DeformationBase<ConfiguratorType> &W, const VectorType &shapes,
-                          const VectorType alpha, const unsigned int numOfShapes) : _W(W), _shapes(shapes),
-                                                                                    _alpha(alpha),
-                                                                                    _numOfShapes(numOfShapes) {
-        if (shapes.size() % numOfShapes != 0)
-            throw BasicException("ElasticMeanFunctional: wrong number of dof!");
-        if (alpha.size() % numOfShapes != 0)
-            throw BasicException("ElasticMeanFunctional: wrong number of alphas!");
+  ElasticMeanFunctional( const DeformationBase<ConfiguratorType> &W, const VectorType &shapes,
+                         const VectorType alpha, const unsigned int numOfShapes ) : _W( W ), _shapes( shapes ),
+                                                                                    _alpha( alpha ),
+                                                                                    _numOfShapes( numOfShapes ) {
+    if ( shapes.size() % numOfShapes != 0 )
+      throw BasicException( "ElasticMeanFunctional: wrong number of dof!" );
+    if ( alpha.size() % numOfShapes != 0 )
+      throw BasicException( "ElasticMeanFunctional: wrong number of alphas!" );
 
-        // Create references for this different shapes bec. of convenience
-        _argRefs.reserve(numOfShapes);
+    // Create references for this different shapes bec. of convenience
+    _argRefs.reserve( numOfShapes );
 
-        const int numLocalDofs = _shapes.size() / numOfShapes;
-        for (int k = 0; k < numOfShapes; k++)
-            _argRefs.push_back(_shapes.segment(k * numLocalDofs, numLocalDofs));
-    }
+    const int numLocalDofs = _shapes.size() / numOfShapes;
+    for ( int k = 0; k < numOfShapes; k++ )
+      _argRefs.push_back( _shapes.segment( k * numLocalDofs, numLocalDofs ));
+  }
 
-    void apply(const VectorType &Arg, RealType &Dest) const override {
-        if (Arg.size() != _argRefs[0].size())
-            throw BasicException("ElasticMeanFunctional::apply: wrong size of dofs!");
+  void apply( const VectorType &Arg, RealType &Dest ) const override {
+    if ( Arg.size() != _argRefs[0].size())
+      throw BasicException( "ElasticMeanFunctional::apply: wrong size of dofs!" );
 
-        Dest = 0.;
-        RealType v;
+    Dest = 0.;
+    RealType v;
 
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
-        for (int k = 0; k < _numOfShapes; k++) {
-          RealType Energy;
-            _W.applyEnergy(_argRefs[k], Arg, Energy);
+    for ( int k = 0; k < _numOfShapes; k++ ) {
+      RealType Energy;
+      _W.applyEnergy( _argRefs[k], Arg, Energy );
 #pragma omp critical
-            {
-                Dest += _alpha[k] * Energy;
-            }
-        }
+      {
+        Dest += _alpha[k] * Energy;
+      }
     }
+  }
 };
 
 //! \brief Gradient of elastic average functional
