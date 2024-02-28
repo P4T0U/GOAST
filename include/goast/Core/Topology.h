@@ -307,6 +307,12 @@ public:
       indices.push_back(static_cast<int>(vf_it->idx()));
   }
 
+  void getVertex1RingEdges( const int idx, std::vector<int>& indices) const {
+    indices.resize(0);
+    for (TriMesh::ConstVertexEdgeIter ve_it = _mesh.cve_iter(_mesh.vertex_handle(idx)); ve_it.is_valid(); ++ve_it)
+      indices.push_back(static_cast<int>(ve_it->idx()));
+  }
+
   void getVertexNRingVertices( const int N, const int idx, std::vector<int>& indices) const {
 	std::vector< std::set<int> > hierachicalSet(N + 1);
 	hierachicalSet[0].insert(idx);
