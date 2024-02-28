@@ -11,13 +11,17 @@
 #include <Eigen/UmfPackSupport>
 #include <Eigen/CholmodSupport>
 #include <Eigen/SparseLU>
+#ifdef GOAST_WITH_MKL
+#include <Eigen/PardisoSupport>
+#endif
 
 enum LINEAR_SOLVER_TYPE {
   UMFPACK_LU_FACT = 1,
   CHOLMOD_LLT = 2,
   EIGEN_CG = 3,
   EIGEN_BICGSTAB = 4,
-  EIGEN_LU = 5
+  EIGEN_LU = 5,
+  PARDISO_LLT = 6
 };
 
 /**
@@ -40,6 +44,9 @@ protected:
 //  Eigen::CholmodDecomposition<MatrixType> _CholmodSolver;
   Eigen::ConjugateGradient<MatrixType, Eigen::Lower | Eigen::Upper> _CGSolver;
   Eigen::BiCGSTAB<MatrixType> _BiCGSolver;
+#ifdef GOAST_WITH_MKL
+  Eigen::PardisoLLT<MatrixType, Eigen::Lower> _PardisoSolver;
+#endif
 
 public:
   LinearSolver( LINEAR_SOLVER_TYPE linearSolver = UMFPACK_LU_FACT ) : _solverType( linearSolver ), _isPrepared(false) {}
@@ -77,6 +84,14 @@ public:
         _BiCGSolver.compute( systemMatrix );
       }
 
+#ifdef GOAST_WITH_MKL
+      case PARDISO_LLT: {
+        _PardisoSolver.compute( systemMatrix );
+        if ( _PardisoSolver.info() != Eigen::Success )
+          throw BasicException( "LinearSolver::prepareSolver: PARDISO_LLT solver failed!" );
+        break;
+      }
+#endif
       default:
         throw BasicException( "LinearSolver::prepareSolver: unknown solver type!" );
         break;
@@ -115,7 +130,15 @@ public:
 
       case EIGEN_BICGSTAB : {
         solution = _BiCGSolver.solve( rhs );
+        break;
       }
+
+#ifdef GOAST_WITH_MKL
+      case PARDISO_LLT : {
+        solution = _PardisoSolver.solve( rhs );
+        break;
+      }
+#endif
 
       default:
         throw BasicException( "LinearSolver::backSubstitute: unknown solver type!" );
