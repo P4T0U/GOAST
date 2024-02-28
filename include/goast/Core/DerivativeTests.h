@@ -60,9 +60,9 @@ public:
 
       VectorType shiftedPoint = testPoint + timeSteps[i] * testDirection;
       _F.apply( shiftedPoint, energyShifted );
-      energies[i] = energyShifted[0];
+      energies[i] = energyShifted;
 
-      derivs[i] = energy[0] + timeSteps[i] * deriv;
+      derivs[i] = energy + timeSteps[i] * deriv;
     }
 
     generatePNG( timeSteps, energies, derivs, saveName );
