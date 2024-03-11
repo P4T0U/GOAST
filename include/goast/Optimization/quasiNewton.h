@@ -27,7 +27,7 @@
  * \author Heeren
  */
 template<typename ConfiguratorType>
-class QuasiNewtonBFGS {
+class QuasiNewtonBFGS : OptimizationBase<ConfiguratorType> {
 
 protected:
   typedef typename ConfiguratorType::RealType RealType;
@@ -35,10 +35,18 @@ protected:
   typedef typename ConfiguratorType::VectorType VectorType;
   typedef typename ConfiguratorType::SparseMatrixType MatrixType;
 
+  // Configuration
   const int _maxIterations;
   const RealType _stopEpsilon;
   const int _reset;
   QUIET_MODE _quietMode;
+
+  bool m_UseForcedSteps = false;
+  RealType m_ForcedStepSize = 1.e-2;
+
+  int m_MaxStepsWithoutReduction = std::numeric_limits<int>::max();
+  RealType m_LimitAbsReduction = 1.e-10;
+  RealType m_LimitRelReduction = 1.e-4;
 
   // BFGS stored information
   mutable int _counter;
@@ -133,7 +141,7 @@ public:
     m_callbackFcts.push_back(F);
   }
 
-  void solve( const VectorType &Arg, VectorType &Dest ) const {
+  void solve( const VectorType &Arg, VectorType &Dest ) const override {
 
     if ( _maxIterations == 0 )
       return;
@@ -141,6 +149,7 @@ public:
 
     RealType energy;
     _E.apply( Arg, energy );
+    RealType oldEnergy = energy;
     if ( _quietMode == SHOW_ALL ) {
       std::cout << "=======================================================================" << std::endl;
       std::cout << "Start BFGS with " << _maxIterations << " iterations and eps = " << _stopEpsilon << "." << std::endl;
@@ -166,6 +175,7 @@ public:
     RealType tau = 1.0;
     int iterations = 0;
     bool forcedReset = false;
+    int StepsSinceReduction = 0;
 
 
     for ( auto &F: m_callbackFcts ) {
@@ -189,13 +199,26 @@ public:
       // get tau
       tau = _stepsizeControl.getStepsize( Dest, f, descentDir, tau, energy );
 
-      if ((tau == 0) && !forcedReset ) {
-        reset();
-        tau = 1.;
-        forcedReset = true;
-        continue;
+      if ( tau == 0 ) {
+        if ( !forcedReset ) {
+          // std::cout << " .. forced reset" << std::endl;
+          reset();
+          forcedReset = true;
+          if (!m_UseForcedSteps) {
+            tau = 1.;
+            continue;
+          }
+          // std::cout << " .. forced step" << std::endl;
+          tau = m_ForcedStepSize;
+          StepsSinceReduction = 0;
+        }
+        else {
+          forcedReset = false;
+        }
       }
-      forcedReset = false;
+      else {
+        forcedReset = false;
+      }
 
       // update position
       Dest += tau * descentDir;
@@ -212,8 +235,18 @@ public:
       update( Dx, Df );
       iterations++;
 
+      oldEnergy = energy;
       _E.apply( Dest, energy );
       f = tmp;
+
+      if ( oldEnergy - energy > m_LimitAbsReduction || ( oldEnergy - energy ) / oldEnergy > m_LimitRelReduction )
+        StepsSinceReduction = 0;
+      else {
+        // std::cout << " abs. reduction = " << std::scientific << oldEnergy - energy << std::endl;
+        // std::cout << " rel. reduction = " << std::scientific << ( oldEnergy - energy ) / oldEnergy << std::endl;
+        StepsSinceReduction++;
+      }
+
       auto t_end = std::chrono::high_resolution_clock::now();
       if ( _quietMode == SHOW_ALL )
         std::cout << std::scientific << "step = " << iterations << " , stepsize = " << tau
@@ -223,6 +256,15 @@ public:
       for ( auto &F: m_callbackFcts ) {
         F( iterations, Dest, energy, f );
       }
+
+      if ( StepsSinceReduction > m_MaxStepsWithoutReduction ) {
+        if ( _quietMode != SUPERQUIET )
+          std::cout << "BFGS stopped due to lack of reduction" << std::endl;
+        break;
+      }
+
+      if ( forcedReset && m_UseForcedSteps )
+        tau = 1.;
     } // end while
 
     if ( _quietMode != SUPERQUIET ) {
@@ -232,6 +274,30 @@ public:
       std::cout << "Final stepsize = " << tau << ", energy = " << energy << ", error = " << FNorm << std::endl;
       std::cout << "=======================================================================" << std::endl;
     }
+  }
+
+  void setParameter( const std::string &name, RealType value ) override {
+    if ( name == "forced_stepsize" )
+      m_ForcedStepSize = value;
+    else if (name == "absolute_reduction_limit" )
+      m_LimitAbsReduction = value;
+    else if (name == "relative_reduction_limit" )
+      m_LimitRelReduction = value;
+    else
+      throw std::runtime_error( "QuasiNewtonBFGS::setParameter(): Unknown parameter '" + name + "'." );
+  }
+
+  void setParameter( const std::string &name, int value ) override {
+    if ( name == "use_forced_steps" )
+      m_UseForcedSteps = static_cast<bool>(value);
+    else if (name == "max_steps_without_reduction" )
+      m_MaxStepsWithoutReduction = value;
+    else
+      throw std::runtime_error( "QuasiNewtonBFGS::setParameter(): Unknown parameter '" + name + "'." );
+  }
+
+  void setParameter( const std::string& name, std::string value ) override {
+    throw std::runtime_error( "QuasiNewtonBFGS::setParameter(): Unknown parameter '" + name + "'." );
   }
 
 protected:
