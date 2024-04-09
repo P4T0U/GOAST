@@ -208,7 +208,7 @@ public:
             tau = 1.;
             continue;
           }
-          // std::cout << " .. forced step" << std::endl;
+          std::cout << " .. forced step" << std::endl;
           tau = m_ForcedStepSize;
           StepsSinceReduction = 0;
         }
@@ -247,16 +247,16 @@ public:
         StepsSinceReduction++;
       }
 
+      for ( auto &F: m_callbackFcts ) {
+        F( iterations, Dest, energy, f );
+      }
+
       auto t_end = std::chrono::high_resolution_clock::now();
       if ( _quietMode == SHOW_ALL )
         std::cout << std::scientific << "step = " << iterations << " , stepsize = " << tau
                   << ", energy = " << energy << ", error = " << FNorm
                   << std::fixed << ", time = " << std::chrono::duration<double, std::milli >( t_end - t_start ).count()
                   << "ms" << std::endl;
-      for ( auto &F: m_callbackFcts ) {
-        F( iterations, Dest, energy, f );
-      }
-
       if ( StepsSinceReduction > m_MaxStepsWithoutReduction ) {
         if ( _quietMode != SUPERQUIET )
           std::cout << "BFGS stopped due to lack of reduction" << std::endl;
