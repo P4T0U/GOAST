@@ -26,5 +26,6 @@
 #include "Core/SmallVecMat.h"
 #include "Core/Topology.h"
 #include "Core/TriangleGeometry.h"
+#include "Core/Profiling.h"
 
 #endif //CORE_H
