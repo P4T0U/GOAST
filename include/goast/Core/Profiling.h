@@ -41,8 +41,8 @@ public:
     m_numRuns.clear();
   }
 
-  virtual void printTimings() const {
-    std::cout << " | Timings for " << typeid( *this ).name() << std::endl;
+  static void printTimings() {
+    std::cout << " | Timings for " << typeid( Derived ).name() << std::endl;
     for ( auto const &[Name, _]: m_Runtimes )
       std::cout << " | "
                 << std::left << std::setw( 45 ) << Name << " | "
