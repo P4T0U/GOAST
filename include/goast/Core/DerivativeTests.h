@@ -175,8 +175,10 @@ public:
     VectorType derivative( testPoint.size());
     _DF.apply( testPoint, derivative );
     RealType gateaux = derivative.dot( testDirection );
-    std::cerr << std::abs(( computeDiffQuotient( testPoint, testDirection, stepSize ) - gateaux ) / gateaux )
-              << std::endl;
+    std::cerr << std::abs( ( computeDiffQuotient( testPoint, testDirection, stepSize ) - gateaux ) / gateaux ) << " / "
+        <<  computeDiffQuotient( testPoint, testDirection, stepSize ) << " / "
+        <<  gateaux
+        << std::endl;
   }
 
   // Compute relative error of \nabla_tau F[p] * d (see above) and \nabla F[p] * d for a test point p and a test direction d

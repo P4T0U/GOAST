@@ -84,9 +84,9 @@ public:
   bool get_starting_point( Ipopt::Index n, bool init_x, Ipopt::Number *x,
                            bool init_z, Ipopt::Number * /*z_L*/, Ipopt::Number * /*z_U*/,
                            Ipopt::Index /*m*/, bool init_lambda, Ipopt::Number * /*lambda*/ ) override {
-    init_x == true;
-    init_z == false;
-    init_lambda == false;
+//    init_x == true;
+//    init_z == false;
+//    init_lambda == false;
     for ( int j = 0; j < _numTotalDofs; ++j )
         x[j] = _startingPoint[j];
     return true;
@@ -153,9 +153,9 @@ public:
     else
       throw std::invalid_argument( "ip_cq == NULL" );
 
-    auto *x = new double[_startingPoint.size()];   // n == _numDofs
-    tnlpAdapter->ResortX( *ip_data->curr()->x(), x );
-    delete[] x;
+//    auto *x = new double[_startingPoint.size()];   // n == _numDofs
+//    tnlpAdapter->ResortX( *ip_data->curr()->x(), x );
+//    delete[] x;
 
     // Plot solution.
     _iter = iter;

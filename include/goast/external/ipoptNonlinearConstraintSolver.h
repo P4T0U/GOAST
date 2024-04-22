@@ -203,9 +203,9 @@ public:
     }
     else
       throw std::invalid_argument( "ip_cq == NULL" );
-    auto *x = new double[_startingPoint.size()];   // n == _numDofs
-    tnlpAdapter->ResortX( *ip_data->curr()->x(), x );
-    delete[] x;
+    // auto *x = new double[_startingPoint.size()];   // n == _numDofs
+    // tnlpAdapter->ResortX( *ip_data->curr()->x(), x );
+    // delete[] x;
 
     // Plot solution.
     _iter = iter;
@@ -254,7 +254,8 @@ public:
                          const BaseOp<VectorType, VectorType> &gradientOp,
                          const BaseOp<VectorType, VectorType> &constraintsOp,
                          const BaseOp<VectorType, SparseMatrixType> &constraintsGradientOp,
-                         const int MaxIterations, const RealType Tolerance,
+                         const int MaxIterations,
+                         const RealType Tolerance,
                          const std::vector<RealType> &x_l,
                          const std::vector<RealType> &x_u,
                          const std::vector<RealType> &gl,
