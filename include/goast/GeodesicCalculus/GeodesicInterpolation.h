@@ -157,7 +157,8 @@ void computeIterativeInterpolation( const typename ConfiguratorType::VectorType&
  * with \f$ s_0 = s_A \f4 and \f$ s_K = s_B \f$.
  */
 template<typename ConfiguratorType>
-class DiscretePathEnergy : public BaseOp<typename ConfiguratorType::VectorType, typename ConfiguratorType::RealType> {
+class DiscretePathEnergy : public BaseOp<typename ConfiguratorType::VectorType, typename ConfiguratorType::RealType>,
+                           public TimedClass<DiscretePathEnergy<ConfiguratorType>> {
 
 protected:    
   typedef typename ConfiguratorType::RealType          RealType;
@@ -165,6 +166,8 @@ protected:
   typedef typename ConfiguratorType::VectorType        VectorType;
   typedef typename ConfiguratorType::SparseMatrixType  MatrixType;
   typedef typename ConfiguratorType::TripletType       TripletType;
+
+  using typename TimedClass<DiscretePathEnergy<ConfiguratorType>>::ScopeTimer;
 
   const DeformationBase<ConfiguratorType>& _W;
   const VectorType& _start, _end;
@@ -175,6 +178,7 @@ public:
     
   // Arg =  (s_1, ..., s_{K-1}) are intermediate shapes only, where s_k = (x_k, y_k, z_k)
   void apply ( const VectorType& Arg, RealType & Dest ) const {
+    ScopeTimer timer("apply");
       
       int numOfFreeShapes = _K - 1;
       
@@ -228,7 +232,8 @@ public:
 //! \brief Gradient of DiscretePathEnergy
 //! \author Heeren
 template<typename ConfiguratorType>
-class DiscretePathEnergyGradient : public BaseOp<typename ConfiguratorType::VectorType, typename ConfiguratorType::VectorType> {
+class DiscretePathEnergyGradient : public BaseOp<typename ConfiguratorType::VectorType, typename ConfiguratorType::VectorType>,
+                           public TimedClass<DiscretePathEnergyGradient<ConfiguratorType>> {
 
 protected:    
   typedef typename ConfiguratorType::RealType          RealType;
@@ -236,6 +241,8 @@ protected:
   typedef typename ConfiguratorType::VectorType        VectorType;
   typedef typename ConfiguratorType::SparseMatrixType  MatrixType;
   typedef typename ConfiguratorType::TripletType       TripletType;
+
+  using typename TimedClass<DiscretePathEnergyGradient<ConfiguratorType>>::ScopeTimer;
 
   const DeformationBase<ConfiguratorType>& _W;
   const VectorType& _start, _end;
@@ -251,7 +258,8 @@ public:
   
   // Arg =  (s_1, ..., s_{K-1}) are intermediate shapes only, where s_k = (x_k, y_k, z_k)
   void apply ( const VectorType& Arg, VectorType& Dest ) const {
-        
+    ScopeTimer timer("apply");
+
       int numOfFreeShapes = _K - 1;
       
       if( Arg.size()%numOfFreeShapes != 0 )
@@ -302,7 +310,8 @@ public:
 //! \brief Hessian of DiscretePathEnergy
 //! \author Heeren
 template<typename ConfiguratorType>
-class DiscretePathEnergyHessian : public BaseOp<typename ConfiguratorType::VectorType, typename ConfiguratorType::SparseMatrixType> {
+class DiscretePathEnergyHessian : public BaseOp<typename ConfiguratorType::VectorType, typename ConfiguratorType::SparseMatrixType>,
+                           public TimedClass<DiscretePathEnergyHessian<ConfiguratorType>> {
 
 protected:    
   typedef typename ConfiguratorType::RealType          RealType;
@@ -311,6 +320,8 @@ protected:
   typedef typename ConfiguratorType::SparseMatrixType  MatrixType;
   typedef typename ConfiguratorType::TripletType       TripletType;
   typedef std::vector<TripletType> TripletListType;
+
+  using typename TimedClass<DiscretePathEnergyHessian<ConfiguratorType>>::ScopeTimer;
 
   const DeformationBase<ConfiguratorType>& _W;
   const VectorType& _start, _end;
@@ -326,6 +337,7 @@ public:
   
   // Arg =  (s_1, ..., s_{K-1}) are intermediate shapes only, where s_k = (x_k, y_k, z_k)
   void applyAdd ( const VectorType& Arg, MatrixType& Dest ) const {
+    ScopeTimer timer("applyAdd");
       int numOfFreeShapes = _K - 1;
       if( Arg.size()%numOfFreeShapes != 0 )
         throw BasicException("DiscretePathEnergyHessian::applyAdd: wrong number of dofs!");      
@@ -339,7 +351,8 @@ public:
   
   // Arg =  (s_1, ..., s_{K-1}) are intermediate shapes only, where s_k = (x_k, y_k, z_k)
   void apply( const VectorType& Arg, MatrixType& Dest ) const {
-      
+    ScopeTimer timer("apply");
+
       int numOfFreeShapes = _K - 1;
       
       if( Arg.size()%numOfFreeShapes != 0 )
@@ -368,7 +381,7 @@ public:
   // fill triplets
   // Arg =  (s_1, ..., s_{K-1}) are intermediate shapes only, where s_k = (x_k, y_k, z_k)
   void pushTriplets( const VectorType& Arg, TripletListType& tripletList ) const {
-          
+          ScopeTimer("pushTriplets");
       int numOfFreeShapes = _K - 1;
       if( Arg.size()%numOfFreeShapes != 0 )
         throw BasicException("DiscretePathEnergyHessian::pushTriplets: wrong number of dofs!");           
