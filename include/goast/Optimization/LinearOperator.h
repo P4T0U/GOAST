@@ -541,16 +541,16 @@ public:
 #pragma omp parallel for
     for ( int i = 0; i < m_numBlocks; i++ ) {
       // \todo That's dumb.. figure out how to properly handle blocks
-      Dest.segment( i * m_blockSize, m_blockSize ) = m_A[i]->operator()<VectorType>(
+      Dest.segment( i * m_blockSize, m_blockSize ) = m_A[i]->template operator()<VectorType>(
               Arg.segment( i * m_blockSize, m_blockSize ));
 //      m_A[i]->apply( Arg.segment( i * m_blockSize, m_blockSize ), Dest.segment( i * m_blockSize, m_blockSize ));
 
       if ( i < m_numBlocks - 1 )
-        Dest.segment( i * m_blockSize, m_blockSize ) += m_B[i]->operator()<VectorType>(
+        Dest.segment( i * m_blockSize, m_blockSize ) += m_B[i]->template operator()<VectorType>(
                 Arg.segment(( i + 1 ) * m_blockSize, m_blockSize ));
 
       if ( i > 0 )
-        Dest.segment( i * m_blockSize, m_blockSize ) += m_B[i - 1]->T<VectorType>(
+        Dest.segment( i * m_blockSize, m_blockSize ) += m_B[i - 1]->template T<VectorType>(
                 Arg.segment(( i - 1 ) * m_blockSize, m_blockSize ));
     }
   }
@@ -648,16 +648,16 @@ public:
 #pragma omp parallel for
     for ( int i = 0; i < m_numBlocks; i++ ) {
       // \todo That's dumb.. figure out how to properly handle blocks
-      Dest.segment( m_blockStarts[i], m_blockSizes[i] ) = m_A[i]->operator()<VectorType>(
+      Dest.segment( m_blockStarts[i], m_blockSizes[i] ) = m_A[i]->template operator()<VectorType>(
               Arg.segment( m_blockStarts[i], m_blockSizes[i] ));
 //      m_A[i]->apply( Arg.segment( i * m_blockSize, m_blockSize ), Dest.segment( i * m_blockSize, m_blockSize ));
 
       if ( i < m_numBlocks - 1 )
-        Dest.segment( m_blockStarts[i], m_blockSizes[i] ) += m_B[i]->operator()<VectorType>(
+        Dest.segment( m_blockStarts[i], m_blockSizes[i] ) += m_B[i]->template operator()<VectorType>(
                 Arg.segment( m_blockStarts[i + 1], m_blockSizes[i + 1] ));
 
       if ( i > 0 )
-        Dest.segment( m_blockStarts[i], m_blockSizes[i] ) += m_B[i - 1]->T<VectorType>(
+        Dest.segment( m_blockStarts[i], m_blockSizes[i] ) += m_B[i - 1]->template T<VectorType>(
                 Arg.segment( m_blockStarts[i - 1], m_blockSizes[i - 1] ));
     }
   }
@@ -752,7 +752,7 @@ public:
 #pragma omp parallel for
     for ( int i = 0; i < m_numBlocks; i++ ) {
       // \todo That's dumb.. figure out how to properly handle blocks
-      Dest.segment( m_rowStart[i], m_numRows[i] ) = m_A[i]->operator()<VectorType>(
+      Dest.segment( m_rowStart[i], m_numRows[i] ) = m_A[i]->template operator()<VectorType>(
               Arg.segment( m_colStart[i], m_numCols[i] ));
     }
   }
