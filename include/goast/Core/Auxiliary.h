@@ -60,65 +60,6 @@ RealType CubicFnc( const RealType& val ){
 }
 
 //==========================================================================================================
-// SCALAR CLASS
-//==========================================================================================================
-template<typename RealType>
-class Scalar{
-    
-RealType _val;    
-    
-public:    
-    Scalar() : _val(0.) {}
-    Scalar( RealType val ) : _val(val) {}
-    
-    void addMultiple( const Scalar<RealType>& other, RealType factor ){
-        _val += factor * other[0];
-    }
-    
-    inline const RealType& operator[] ( int ) const {
-      return _val;
-    }
-    
-    inline RealType& operator[] ( int ) {
-      return _val;
-    }
-    
-    void setZero() {
-        _val = 0.;
-    }
-    
-    //! add other
-    Scalar<RealType>& operator+= ( const Scalar<RealType>& other ) {
-      _val += other[0];
-      return *this;
-    }
-    
-    //! multiply by scalar
-    Scalar<RealType>& operator*= ( RealType Alpha ) {
-      _val *= Alpha;
-      return *this;
-    }
-
-  //! add other
-  Scalar<RealType> operator+ ( const RealType& other ) {
-      Scalar<RealType> sum (_val + other);
-    return sum;
-  }
-
-  //! add other
-  Scalar<RealType> operator* ( const RealType& other ) {
-    Scalar<RealType> sum (_val * other);
-    return sum;
-  }
-};
-
-template<typename RealType>
-std::ostream &operator<<( std::ostream &os, const Scalar<RealType> &x ) {
-  os << x[0];
-  return os;
-}
-
-//==========================================================================================================
 // GENERIC TENSOR CLASS
 //==========================================================================================================
 template<typename MatrixType>
