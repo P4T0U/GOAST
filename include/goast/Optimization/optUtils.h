@@ -215,8 +215,8 @@ bool insideBox( const VectorType &x, const VectorType &lowerBounds, const Vector
 
 
 template<typename Scalar, int Flags, typename StorageIndex>
-Eigen::MappedSparseMatrix<Scalar, Flags, StorageIndex> viewAsEigen( cholmod_factor &cf ) {
-  return Eigen::MappedSparseMatrix<Scalar, Flags, StorageIndex>
+Eigen::Map<Eigen::SparseMatrix<Scalar, Flags, StorageIndex>> viewAsEigen( cholmod_factor &cf ) {
+  return Eigen::Map<Eigen::SparseMatrix<Scalar, Flags, StorageIndex>>
           ( cf.n, cf.n, static_cast<StorageIndex *>(cf.p)[cf.n],
             static_cast<StorageIndex *>(cf.p), static_cast<StorageIndex *>(cf.i), static_cast<Scalar *>(cf.x));
 }
