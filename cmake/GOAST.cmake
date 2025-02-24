@@ -8,9 +8,15 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/Modules)
 ################################################################################
 # Mandatory libraries: Eigen, OpenMesh, and SuiteSparse
 ################################################################################
-find_package(Eigen3 REQUIRED)
-find_package(OpenMesh REQUIRED)
-find_package(SuiteSparse REQUIRED)
+if (NOT TARGET Eigen3::Eigen)
+  find_package(Eigen3 REQUIRED)
+endif ()
+if (NOT TARGET OpenMeshCore)
+  find_package(OpenMesh REQUIRED)
+endif ()
+if (NOT TARGET SuiteSparse::suitesparseconfig)
+  find_package(SuiteSparse REQUIRED)
+endif ()
 
 ################################################################################
 # GOAST targets
@@ -27,7 +33,7 @@ target_include_directories(GOAST INTERFACE
 
 target_link_libraries(GOAST INTERFACE
                       Eigen3::Eigen
-                      suitesparse::suitesparse
+                      SuiteSparse::suitesparseconfig
                       OpenMeshCore
                       OpenMeshTools)
 
