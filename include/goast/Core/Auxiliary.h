@@ -117,14 +117,14 @@ public:
   template<typename VectorType>
   void applyVector( const VectorType& Arg, MatrixType& Dest ) const {
 
-    if ((uint)Arg.size() != (*this).size())
+    if ((unsigned int)Arg.size() != (*this).size())
       throw BasicException( "Tensor applyVector: sizes don't match!" );
 
     if( Dest.rows() != _rows || Dest.cols() != _cols )
       throw BasicException( "Tensor applyVector: cols/rows don't match!" );
 
     Dest.setZero();
-    for (uint i = 0; i < Arg.size(); ++i){
+    for (unsigned int i = 0; i < Arg.size(); ++i){
       //  std::cout << (*this)[i].rows() << " " << (*this)[i].cols() << std::endl;
       Dest += (*this)[i]*Arg[i];
     }
@@ -287,7 +287,7 @@ bool checkForNANsAndINFs( const VectorType &Arg ) {
 void fillPathMask( int numShapes, int numDofs, const std::vector<int>& localMask, std::vector<int>& globalMask ){
     globalMask.clear();
     for( int i = 0; i < numShapes; i++ )
-        for( uint j = 0; j < localMask.size(); j++ )
+        for( unsigned int j = 0; j < localMask.size(); j++ )
             globalMask.push_back(i*numDofs + localMask[j]);
 }
 
@@ -307,7 +307,7 @@ template<typename MatrixType>
 void applyMaskToSymmetricMatrix( const std::vector<int> &mask, MatrixType &mat ) {
 
   // run over mask entries
-  for ( uint k = 0; k < mask.size(); ++k ) {
+  for ( unsigned int k = 0; k < mask.size(); ++k ) {
     int majorIdx = mask[k];
 
     // mask matrix
@@ -326,7 +326,7 @@ void applyMaskToSymmetricMatrix( const std::vector<int> &mask, MatrixType &mat )
     }
 
     // set row (resp. col) to e_i, where i = majorIdx
-    for ( uint i = 0; i < nzMinorIdx.size(); i++ ) {
+    for ( unsigned int i = 0; i < nzMinorIdx.size(); i++ ) {
       typename MatrixType::InnerIterator it( mat, nzMinorIdx[i] );
       while ( it.index() < majorIdx ) ++it;
       if ( it.index() != majorIdx )
@@ -340,7 +340,7 @@ void applyMaskToSymmetricMatrix( const std::vector<int> &mask, MatrixType &mat )
 template<typename MatrixType>
 void applyMaskToMajor( const std::vector<int> &mask, MatrixType &mat, bool setDiagonalOne = true ) {
   // run over mask entries
-  for ( uint k = 0; k < mask.size(); ++k ) {
+  for ( unsigned int k = 0; k < mask.size(); ++k ) {
     int majorIdx = mask[k];
     // mask matrix
     if ( !(majorIdx < mat.outerSize()) ) {
@@ -409,7 +409,7 @@ void applyMaskToMatrix( const std::vector<int>& mask, MatrixType& mat, bool setD
 template<typename VectorType>
 void applyMaskToVector( const std::vector<int>& mask, VectorType& vec ) {
     // run over mask entries
-    for (uint k= 0; k<mask.size(); ++k){
+    for (unsigned int k= 0; k<mask.size(); ++k){
       int majorIdx = mask[k];      
       // mask vector
       if ( !(majorIdx < vec.size()) ){
