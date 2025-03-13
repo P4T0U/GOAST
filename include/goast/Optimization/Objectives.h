@@ -33,19 +33,20 @@ protected:
   typedef typename ConfiguratorType::RealType RealType;
 
   typedef typename ConfiguratorType::VectorType VectorType;
+  using WeightVectorType = typename ConfiguratorType::WeightVectorType;
   typedef typename ConfiguratorType::VecType VecType;
   typedef typename ConfiguratorType::MatType MatType;
 
 //  const ObjectiveOp<ConfiguratorType> &_constraintOp;
   std::vector<const ObjectiveOp<ConfiguratorType> *> _Ops;
-  const VectorType &_Weights;
+  const WeightVectorType &_Weights;
 
   const int _numOps;
 //  const int _numShapes;
 
 public:
   template<class... Items>
-  AdditionOp( const VectorType &Weights, Items const &... constraintOps ) : _Weights( Weights ),
+  AdditionOp( const WeightVectorType &Weights, Items const &... constraintOps ) : _Weights( Weights ),
                                                                             _numOps( sizeof...( constraintOps )) {
     append_to_vector( _Ops, constraintOps... );
 
@@ -83,19 +84,20 @@ protected:
   typedef typename ConfiguratorType::RealType RealType;
 
   typedef typename ConfiguratorType::VectorType VectorType;
+  using WeightVectorType = typename ConfiguratorType::WeightVectorType;
   typedef typename ConfiguratorType::VecType VecType;
   typedef typename ConfiguratorType::MatType MatType;
 
 //  const ObjectiveOp<ConfiguratorType> &_constraintOp;
   std::vector<const ObjectiveGradient<ConfiguratorType> *> _Ops;
-  const VectorType &_Weights;
+  const WeightVectorType &_Weights;
 
   const int _numOps;
 //  const int _numShapes;
 
 public:
   template<class... Items>
-  AdditionGradient( const VectorType &Weights, Items const &... constraintOps ) : _Weights( Weights ),
+  AdditionGradient( const WeightVectorType &Weights, Items const &... constraintOps ) : _Weights( Weights ),
                                                                               _numOps( sizeof...( constraintOps )) {
     append_to_vector( _Ops, constraintOps... );
 
@@ -136,20 +138,21 @@ protected:
   typedef typename ConfiguratorType::RealType RealType;
 
   typedef typename ConfiguratorType::VectorType VectorType;
+  using WeightVectorType = typename ConfiguratorType::WeightVectorType;
   typedef typename ConfiguratorType::SparseMatrixType MatrixType;
   typedef typename ConfiguratorType::VecType VecType;
   typedef typename ConfiguratorType::MatType MatType;
 
 //  const ObjectiveOp<ConfiguratorType> &_constraintOp;
   std::vector<const ObjectiveHessian<ConfiguratorType> *> m_Ops;
-  const VectorType &m_Weights;
+  const WeightVectorType &m_Weights;
 
   const int _numOps;
 //  const int _numShapes;
 
 public:
   template<class... Items>
-  AdditionHessian( const VectorType &Weights, Items const &... constraintOps ) : m_Weights( Weights ),
+  AdditionHessian( const WeightVectorType &Weights, Items const &... constraintOps ) : m_Weights( Weights ),
                                                                                  _numOps( sizeof...( constraintOps )) {
     append_to_vector( m_Ops, constraintOps... );
 
